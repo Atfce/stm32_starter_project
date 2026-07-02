@@ -26,9 +26,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <stdio.h>	//Ê¹ï¿½ï¿½ printf
-#include <string.h>	//Ê¹ï¿½ï¿½strlenï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-
+#include <stdio.h>	//Ê¹ÓÃprintf
+#include <string.h>	//Ê¹ÓÃstrlen
 
 /* USER CODE END Includes */
 
@@ -51,9 +50,8 @@
 
 /* USER CODE BEGIN PV */
 
-uint8_t usart_rx_byte;				
-unsigned char rx_buf[10];
-uint8_t rx_len=0;
+uint8_t usart_rx_byte;
+uint8_t rx_flag=0;
 
 /* USER CODE END PV */
 
@@ -115,6 +113,26 @@ int main(void)
   {
 		HAL_UART_Receive(&huart1, &usart_rx_byte, 1, 0xFF);
 		
+		if(rx_flag==1)
+		{
+			rx_flag=0;
+//			__NOP();
+			
+			//'S'
+			if(usart_rx_byte=='s')
+			{
+				__NOP();
+			}
+			
+			//170
+//			if(usart_rx_byte==170)
+//			{
+//				__NOP();
+//			}
+			
+			//»Ø´«pc
+			HAL_UART_Transmit_IT(&huart1,&usart_rx_byte,1);
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -168,25 +186,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance == USART1)
 	{
-		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½
-		HAL_UART_Transmit(&huart1,&usart_rx_byte,1,HAL_MAX_DELAY);
-		//ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ó£¬³ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
-//		__NOP();
-	}
-	
-	
-//	if(usart_rx_byte==170)
-//	{
-//		__NOP();
-//	}
-	
-	
-	rx_buf[rx_len++]=usart_rx_byte;
-	if(rx_len>=3&&rx_buf[0]=='1'&&rx_buf[1]=='7'&&rx_buf[2]=='0')
-	{
-		__NOP();
-		rx_len=0;
-		memset(rx_buf,0,sizeof(rx_buf));
+		rx_flag=1;
 	}
 	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
 }
@@ -197,7 +197,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	if(huart->Instance == USART1)
 	{
 		HAL_UART_AbortReceive(&huart1);
-		
+		HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
 	}
 }
 
