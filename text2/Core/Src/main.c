@@ -1,4 +1,4 @@
- /* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
@@ -26,8 +26,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <stdio.h>	//Ê¹ÓÃ printf
-#include <string.h>	//Ê¹ÓÃstrlenº¯ÊýÓÃÓÚ¼ÆËã×Ö·û´®³¤¶È
+#include <stdio.h>	//Ê¹ï¿½ï¿½ printf
+#include <string.h>	//Ê¹ï¿½ï¿½strlenï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
 /* USER CODE END Includes */
@@ -50,6 +50,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+uint8_t usart_rx_byte;				
+unsigned char rx_buf[10];
+uint8_t rx_len=0;
 
 /* USER CODE END PV */
 
@@ -98,35 +102,18 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	
-	uint16_t a =100;
-	char str[]="hello";
-	int16_t b =-45;
-	uint16_t c=0xAA;
-	uint16_t NUM = 177;
-	float d=3.14;
-	
 	
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
+	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);				//¿ªÆôÊ±ÖÓ
+
 
   while (1)
   {
-		
-		//HAL_UART_Transmit(&huart1,&ch,1,HAL_MAX_DELAY);
-		
-		printf("%d\r\n",a);
-		printf("%s\r\n",str);
-		printf("%d\r\n",b);
-		printf("0x%02X\r\n",c);
-		printf("177  %d    0x%02X\r\n",NUM,NUM);
-		printf("%f\r\n",d);
-	
-		
-		
-		HAL_Delay(10000);		// Ã¿¸ô1Ãë·¢ËÍÒ»´Î£¬±ãÓÚ¹Û²ì
+		HAL_UART_Receive(&huart1, &usart_rx_byte, 1, 0xFF);
 		
     /* USER CODE END WHILE */
 
@@ -147,10 +134,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -160,12 +150,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -173,11 +163,49 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART1)
+	{
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¸ï¿½ï¿½ï¿½ï¿½ï¿½
+		HAL_UART_Transmit(&huart1,&usart_rx_byte,1,HAL_MAX_DELAY);
+		//ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½Ú½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ó£¬³ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½
+//		__NOP();
+	}
+	
+	
+//	if(usart_rx_byte==170)
+//	{
+//		__NOP();
+//	}
+	
+	
+	rx_buf[rx_len++]=usart_rx_byte;
+	if(rx_len>=3&&rx_buf[0]=='1'&&rx_buf[1]=='7'&&rx_buf[2]=='0')
+	{
+		__NOP();
+		rx_len=0;
+		memset(rx_buf,0,sizeof(rx_buf));
+	}
+	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
+}
+
+//·ÀÖ¹Òç³ö/Ö¡´íÎó
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART1)
+	{
+		HAL_UART_AbortReceive(&huart1);
+		
+	}
+}
+
 /**
-  * @brief  ÖØ¶¨Ïò printf µÄÊä³öµ½´®¿Ú
-  * @param  ch Òª·¢ËÍµÄ×Ö·û
-  * @param  f  ÎÄ¼þÖ¸Õë£¨±ê×¼¿âÒªÇóµÄ²ÎÊý£¬Ò»°ã²»Ê¹ÓÃ£©
-  * @retval ·µ»Ø·¢ËÍµÄ×Ö·û
+  * @brief  ï¿½Ø¶ï¿½ï¿½ï¿½ printf ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  * @param  ch Òªï¿½ï¿½ï¿½Íµï¿½ï¿½Ö·ï¿½
+  * @param  f  ï¿½Ä¼ï¿½Ö¸ï¿½ë£¨ï¿½ï¿½×¼ï¿½ï¿½Òªï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ã²»Ê¹ï¿½Ã£ï¿½
+  * @retval ï¿½ï¿½ï¿½Ø·ï¿½ï¿½Íµï¿½ï¿½Ö·ï¿½
   */
 int fputc(int ch, FILE *f)
 {
