@@ -111,28 +111,43 @@ int main(void)
 
   while (1)
   {
-		HAL_UART_Receive(&huart1, &usart_rx_byte, 1, 0xFF);
 		
-		if(rx_flag==1)
+		//HAL_GPIO_WritePin(GPIOB, LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
+		
+		if(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET)
 		{
-			rx_flag=0;
-//			__NOP();
-			
-			//'S'
-			if(usart_rx_byte=='s')
+			HAL_Delay(20);
+			if(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET)	
 			{
 				__NOP();
 			}
-			
-			//170
-//			if(usart_rx_byte==170)
+			while(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET);
+			HAL_Delay(20);
+		}
+		
+//´®¿ÚÍ¨ÐÅ
+//		HAL_UART_Receive(&huart1, &usart_rx_byte, 1, 0xFF);
+//		
+//		if(rx_flag==1)
+//		{
+//			rx_flag=0;
+////			__NOP();
+//			
+//			//'S'
+//			if(usart_rx_byte=='s')
 //			{
 //				__NOP();
 //			}
-			
-			//»Ø´«pc
-			HAL_UART_Transmit_IT(&huart1,&usart_rx_byte,1);
-		}
+//			
+//			//170
+////			if(usart_rx_byte==170)
+////			{
+////				__NOP();
+////			}
+//			
+//			//»Ø´«pc
+//			HAL_UART_Transmit_IT(&huart1,&usart_rx_byte,1);
+//		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -182,24 +197,25 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == USART1)
-	{
-		rx_flag=1;
-	}
-	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
-}
+//´®¿ÚÍ¨ÐÅ 
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//	if(huart->Instance == USART1)
+//	{
+//		rx_flag=1;
+//	}
+//	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
+//}
 
-//·ÀÖ¹Òç³ö/Ö¡´íÎó
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance == USART1)
-	{
-		HAL_UART_AbortReceive(&huart1);
-		HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
-	}
-}
+////·ÀÖ¹Òç³ö/Ö¡´íÎó
+//void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+//{
+//	if(huart->Instance == USART1)
+//	{
+//		HAL_UART_AbortReceive(&huart1);
+//		HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//¿ªÆôÊ±ÖÓ
+//	}
+//}
 
 /**
   * @brief  ï¿½Ø¶ï¿½ï¿½ï¿½ printf ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
