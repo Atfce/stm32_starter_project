@@ -40,6 +40,11 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define LED_STATE_ON	  0
+#define LED_STATE_ON_TO_OFF 1
+#define LED_STATE_OFF 2
+#define LED_STATE_OFF_TO_ON 3
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,6 +70,10 @@ uint8_t timer_50ms=0;
 uint8_t timer_100ms=0;
 uint8_t timer_1000ms=0;
 
+uint8_t flag_100ms=0;
+uint8_t flag_1000ms=0;
+
+uint8_t LED_state=LED_STATE_OFF;
 
 /* USER CODE END PV */
 
@@ -128,16 +137,64 @@ int main(void)
   while (1)
   {
 		
-		if(timer_10ms%10==0)
-		{
-			//HAL_GPIO_TogglePin(GPIOB, LED1_Pin);
-			timer_1000ms++;
+		switch(LED_state)
+		{ 
+			case(LED_STATE_ON):
+				LED_state=LED_STATE_ON_TO_OFF;
+				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_RESET);
+				flag_100ms = 0;
+			break;
+			
+			case (LED_STATE_ON_TO_OFF):
+				if (flag_100ms)
+				{
+					flag_100ms = 0;
+					LED_state=LED_STATE_OFF;
+				}
+				
+			break;
+			
+			case(LED_STATE_OFF):
+				LED_state=LED_STATE_OFF_TO_ON;
+				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
+				flag_1000ms = 0;
+			break;
+			
+			case(LED_STATE_OFF_TO_ON):
+				if (flag_1000ms)
+				{
+					flag_1000ms = 0;
+					LED_state=LED_STATE_ON;
+				}
+				
+			break;
 		}
-		if(timer_10ms%5==0)
-		{
-			timer_100ms++;
-			//HAL_GPIO_TogglePin(GPIOB, LED2_Pin);
-		}
+			
+		
+		
+//		if(rx_flag==1)
+//		{
+//			rx_flag=0;
+//			if(usart_rx_byte=='d')
+//			{
+//				if(timer_100ms>=1)
+//				{
+//					timer_100ms=0;
+//					HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
+//				}
+//				
+//				if(timer_1000ms>=1)
+//				{
+//					timer_1000ms=0;
+//					HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_RESET);
+//				}
+//			}
+//		}
+		
+//		if(timer_10ms%100==0)
+//		{
+//			HAL_GPIO_TogglePin(GPIOB, LED1_Pin);
+//		}
 		
 		
 ////		HAL_GPIO_WritePin(GPIOB, LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
@@ -234,47 +291,34 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	//判断是否是TIM2的中断
 	if(htim -> Instance == TIM2)
 	{
-		//翻转LED电平
-//		HAL_GPIO_TogglePin(GPIOB , LED1_Pin);
 			timer_10ms++;
-			
-//			if(timer_10ms>=250)
-//			{
-//				timer_10ms=0;
-//			}
-//		
-			
-//			if(timer_10ms%2==0)
-//			{
-//				timer_20ms++;
-//			}
-//			if(timer_10ms%5==0)
-//			{
-//				timer_50ms++;
-//			}
-//			if(timer_10ms%10==0)
-//			{
-//				timer_100ms++;
-//			}
+			timer_10ms_1++;
+
 		
-////		if(timer_10ms_1==2)
-////		{
-////			timer_10ms_1=0;
-////			timer_20ms++;
-////			if(timer_20ms==5)
-////			{
-////				timer_20ms=0;
-////				timer_100ms++;
-////				if(timer_100ms==10)
-////				{
-////					timer_100ms=0;
-////				}
-////			}
-////		}
-////		if(timer_10ms == 5)
-////		{
-////			 timer_10ms = 0;
-////		}
+		if(timer_10ms_1==2)
+		{
+			timer_10ms_1=0;
+//			timer_20ms=1;
+			timer_100ms++;
+			
+			if(timer_100ms==5)
+			{
+				timer_100ms=0;
+				timer_1000ms++;
+				flag_100ms = 1;
+				
+				if(timer_1000ms==10)
+				{
+					timer_1000ms=0;
+					flag_1000ms = 1;
+				}
+			}
+		}
+		if(timer_10ms == 5)
+		{
+			 timer_10ms = 0;
+			timer_50ms=1;
+		}
 			
 			
 	
@@ -283,24 +327,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 //����ͨ�� 
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-//{
-//	if(huart->Instance == USART1)
-//	{
-//		rx_flag=1;
-//	}
-//	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//����ʱ��
-//}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART1)
+	{
+		rx_flag=1;
+	}
+	HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//����ʱ��
+}
 
-////��ֹ���/֡����
-//void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-//{
-//	if(huart->Instance == USART1)
-//	{
-//		HAL_UART_AbortReceive(&huart1);
-//		HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//����ʱ��
-//	}
-//}
+//��ֹ���/֡����
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance == USART1)
+	{
+		HAL_UART_AbortReceive(&huart1);
+		HAL_UART_Receive_IT(&huart1,&usart_rx_byte,1);			//����ʱ��
+	}
+}
 
 /**
   * @brief  �ض��� printf �����������
