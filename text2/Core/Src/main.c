@@ -45,6 +45,12 @@
 #define LED_STATE_OFF 2
 #define LED_STATE_OFF_TO_ON 3
 
+#define LED1_ONN	   0
+#define LED2_ONN     1
+#define LED_ALLON    2
+#define LED_ALLOFF   3
+#define LED1_Blink   4
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,10 +76,30 @@ uint8_t timer_50ms=0;
 uint8_t timer_100ms=0;
 uint8_t timer_1000ms=0;
 
+// struct
+typedef struct {
+	uint8_t t_10ms;
+	uint8_t t_20ms;
+	uint8_t t_50ms;
+	uint8_t t_100ms;
+	uint8_t t_1000ms;
+}timer_t;
+
+timer_t timer = {
+	.t_10ms = 0,
+	.t_20ms = 0,
+	.t_50ms = 0,
+	.t_100ms = 0,
+	.t_1000ms = 0
+};
+
+
+
+
 uint8_t flag_100ms=0;
 uint8_t flag_1000ms=0;
 
-uint8_t LED_state=LED_STATE_OFF;
+uint8_t LED_state=LED1_ONN;
 
 /* USER CODE END PV */
 
@@ -96,7 +122,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+//	timer.t_10ms++;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -137,38 +163,100 @@ int main(void)
   while (1)
   {
 		
-		switch(LED_state)
-		{ 
-			case(LED_STATE_ON):
-				LED_state=LED_STATE_ON_TO_OFF;
-				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_RESET);
-				flag_100ms = 0;
-			break;
-			
-			case (LED_STATE_ON_TO_OFF):
-				if (flag_100ms)
+		if(rx_flag==1)
+		{
+			rx_flag=0;
+			switch(LED_state)
+			{
+				case(LED1_ONN):
+				if(usart_rx_byte=='a')
 				{
-					flag_100ms = 0;
-					LED_state=LED_STATE_OFF;
+					LED1_ON();
+					LED2_OFF();
+					LED_state=LED2_ONN;
 				}
 				
-			break;
-			
-			case(LED_STATE_OFF):
-				LED_state=LED_STATE_OFF_TO_ON;
-				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
-				flag_1000ms = 0;
-			break;
-			
-			case(LED_STATE_OFF_TO_ON):
-				if (flag_1000ms)
+				break;
+				
+				case(LED2_ONN):
+				if(usart_rx_byte=='b')
 				{
-					flag_1000ms = 0;
-					LED_state=LED_STATE_ON;
+					LED2_ON();
+					LED1_OFF();
+					LED_state=LED_ALLON;
 				}
 				
-			break;
+				break;
+				
+				case(LED_ALLON):
+				if(usart_rx_byte=='c')
+				{
+					LED1_ON();
+					LED2_ON();
+					LED_state=LED1_Blink;
+					flag_100ms=0;
+				}
+				
+				break;
+				
+				case(LED1_Blink):
+				if(usart_rx_byte=='d')
+				{
+					LED_state=LED1_ONN;
+					flag_1000ms=0;
+				}
+				
+				break;
+				
+			}
 		}
+		
+		switch(LED_state)
+		{
+			case(LED1_ONN):
+				if(flag_1000ms==1)
+				{
+					flag_1000ms=0;
+					LED2_OFF();
+					LED1_TOGGLE();
+				}
+				
+				break;
+				
+		}
+		
+//		switch(LED_state)
+//		{ 
+//			case(LED_STATE_ON):
+//				LED_state=LED_STATE_ON_TO_OFF;
+//				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_RESET);
+//				flag_100ms = 0;
+//			break;
+//			
+//			case (LED_STATE_ON_TO_OFF):
+//				if (flag_100ms==1)
+//				{
+//					flag_100ms = 0;
+//					LED_state=LED_STATE_OFF;
+//				}
+//				
+//			break;
+//			
+//			case(LED_STATE_OFF):
+//				LED_state=LED_STATE_OFF_TO_ON;
+//				HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
+//				flag_1000ms = 0;
+//			break;
+//			
+//			case(LED_STATE_OFF_TO_ON):
+//				if (flag_1000ms==1)
+//				{
+//					flag_1000ms = 0;
+//					LED_state=LED_STATE_ON;
+//				}
+//				
+//			break;
+//		}
 			
 		
 		
@@ -191,49 +279,10 @@ int main(void)
 //			}
 //		}
 		
-//		if(timer_10ms%100==0)
-//		{
-//			HAL_GPIO_TogglePin(GPIOB, LED1_Pin);
-//		}
 		
 		
-////		HAL_GPIO_WritePin(GPIOB, LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
 //		
-//		if(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET)
-//		{
-//			HAL_Delay(20);
-//			if(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET)	
-//			{
-//				HAL_GPIO_TogglePin(GPIOB, LED1_Pin|LED2_Pin);
-//		
-//			}
-//			while(HAL_GPIO_ReadPin(GPIOB,KEY3_Pin)==GPIO_PIN_RESET);
-//			HAL_Delay(20);
-//		}
-//		
-////		HAL_UART_Transmit(&huart1,&ch,1,HAL_MAX_DELAY);
-//		HAL_Delay(1000);
-		
-//		
-//����ͨ��
-//		HAL_UART_Receive(&huart1, &usart_rx_byte, 1, 0xFF);
-//		
-//		if(rx_flag==1)
-//		{
-//			rx_flag=0;
-////			__NOP();
-//			
-//			//'S'
-//			if(usart_rx_byte=='s')
-//			{
-//				__NOP();
-//			}
-//			
-//			//170
-////			if(usart_rx_byte==170)
-////			{
-////				__NOP();
-////			}
+
 //			
 //			//�ش�pc
 //			HAL_UART_Transmit_IT(&huart1,&usart_rx_byte,1);
@@ -292,24 +341,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(htim -> Instance == TIM2)
 	{
 			timer_10ms++;
-			timer_10ms_1++;
+			timer.t_10ms++;
 
 		
-		if(timer_10ms_1==2)
+		if(timer.t_10ms==2)
 		{
-			timer_10ms_1=0;
+			timer.t_10ms=0;
 //			timer_20ms=1;
-			timer_100ms++;
+			timer.t_100ms++;
 			
-			if(timer_100ms==5)
+			if(timer.t_100ms==5)
 			{
-				timer_100ms=0;
-				timer_1000ms++;
+				timer.t_100ms=0;
+				timer.t_1000ms++;
 				flag_100ms = 1;
 				
-				if(timer_1000ms==10)
+				if(timer.t_1000ms==10)
 				{
-					timer_1000ms=0;
+					timer.t_1000ms=0;
 					flag_1000ms = 1;
 				}
 			}

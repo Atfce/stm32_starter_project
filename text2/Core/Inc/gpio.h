@@ -40,6 +40,13 @@ void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void LED1_ON(void);
+void LED2_ON(void);
+void LED1_OFF(void);
+void LED2_OFF(void);
+void LED1_TOGGLE(void);
+void LED2_TOGGLE(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

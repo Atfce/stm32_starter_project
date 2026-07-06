@@ -69,4 +69,34 @@ void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 2 */
 
+void LED1_ON(void)
+{
+	HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_RESET);
+}
+
+void LED2_ON(void)
+{
+	HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_RESET);
+}
+
+void LED1_OFF(void)
+{
+	HAL_GPIO_WritePin(GPIOB, LED1_Pin, GPIO_PIN_SET);
+}
+
+void LED2_OFF(void)
+{
+	HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
+}
+
+void LED1_TOGGLE(void)
+{
+	HAL_GPIO_TogglePin(GPIOB, LED1_Pin);
+}
+
+void LED2_TOGGLE(void)
+{
+	HAL_GPIO_TogglePin(GPIOB, LED2_Pin);
+}
+
 /* USER CODE END 2 */
